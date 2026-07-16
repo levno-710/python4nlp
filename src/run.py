@@ -29,6 +29,7 @@ def main():
     for size in args.sizes:
         for seed in args.seeds:
             train = sample_per_class(data["train"], size, seed)
+            print(f"Training with {size} examples per class (seed {seed})")
             runs = [("tfidf", *train_tfidf(train, data["validation"], data["test"]))]
             if not args.skip_transformer:
                 runs.append(

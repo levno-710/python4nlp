@@ -13,8 +13,11 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
+from transformers.utils import logging as transformers_logging
 
 from .config import LABELS, MAX_LENGTH
+
+transformers_logging.set_verbosity_error()
 
 
 def scores(labels, predictions) -> dict[str, float]:
@@ -72,6 +75,8 @@ def train_transformer(
             per_device_eval_batch_size=64,
             save_strategy="no",
             logging_strategy="no",
+            disable_tqdm=False,
+            dataloader_pin_memory=False,
             report_to="none",
             seed=seed,
             data_seed=seed,
