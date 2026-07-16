@@ -42,7 +42,6 @@ def main():
                             args.model,
                             args.epochs,
                             seed,
-                            args.output_dir / "checkpoints",
                         ),
                     )
                 )

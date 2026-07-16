@@ -1,4 +1,4 @@
-from pathlib import Path
+from tempfile import TemporaryDirectory
 from time import perf_counter
 
 import torch
@@ -43,7 +43,7 @@ def train_tfidf(train, validation, test):
 
 
 def train_transformer(
-    train, validation, test, model_name: str, epochs: int, seed: int, output_dir: Path
+    train, validation, test, model_name: str, epochs: int, seed: int
 ):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
@@ -64,33 +64,34 @@ def train_transformer(
         id2label=dict(enumerate(LABELS)),
         label2id={label: i for i, label in enumerate(LABELS)},
     )
-    trainer = Trainer(
-        model=model,
-        args=TrainingArguments(
-            output_dir=str(output_dir),
-            num_train_epochs=epochs,
-            learning_rate=2e-5,
-            weight_decay=0.01,
-            per_device_train_batch_size=8,
-            per_device_eval_batch_size=64,
-            save_strategy="no",
-            logging_strategy="no",
-            disable_tqdm=False,
-            dataloader_pin_memory=False,
-            report_to="none",
-            seed=seed,
-            data_seed=seed,
-        ),
-        train_dataset=encoded["train"],
-        data_collator=DataCollatorWithPadding(tokenizer),
-    )
-    start = perf_counter()
-    trainer.train()
-    elapsed = perf_counter() - start
-    predictions = {
-        split: trainer.predict(encoded[split]).predictions.argmax(axis=1) # type: ignore
-        for split in ("validation", "test")
-    }
+    with TemporaryDirectory() as output_dir:
+        trainer = Trainer(
+            model=model,
+            args=TrainingArguments(
+                output_dir=output_dir,
+                num_train_epochs=epochs,
+                learning_rate=2e-5,
+                weight_decay=0.01,
+                per_device_train_batch_size=8,
+                per_device_eval_batch_size=64,
+                save_strategy="no",
+                logging_strategy="no",
+                disable_tqdm=False,
+                dataloader_pin_memory=False,
+                report_to="none",
+                seed=seed,
+                data_seed=seed,
+            ),
+            train_dataset=encoded["train"],
+            data_collator=DataCollatorWithPadding(tokenizer),
+        )
+        start = perf_counter()
+        trainer.train()
+        elapsed = perf_counter() - start
+        predictions = {
+            split: trainer.predict(encoded[split]).predictions.argmax(axis=1)  # type: ignore
+            for split in ("validation", "test")
+        }
     del trainer, model
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
