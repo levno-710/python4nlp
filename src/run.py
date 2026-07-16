@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .config import LABELS, MODEL_NAME, SEEDS, TRAIN_SIZES
+from .config import EPOCHS, LABELS, MODEL_NAME, SEEDS, TRAIN_SIZES
 from .data import load_data, sample_per_class
 from .models import scores, train_tfidf, train_transformer
 from .plot import plot_learning_curve
@@ -14,7 +14,7 @@ def parse_args():
     parser.add_argument("--sizes", nargs="+", type=int, default=TRAIN_SIZES)
     parser.add_argument("--seeds", nargs="+", type=int, default=SEEDS)
     parser.add_argument("--model", default=MODEL_NAME)
-    parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--epochs", type=int, default=EPOCHS)
     parser.add_argument("--output-dir", type=Path, default=Path("results"))
     parser.add_argument("--skip-transformer", action="store_true")
     return parser.parse_args()
