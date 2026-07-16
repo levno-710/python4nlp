@@ -28,11 +28,12 @@ def load_data() -> DatasetDict:
 def sample_per_class(dataset: Dataset, size: int, seed: int) -> Dataset:
     labels = np.asarray(dataset["label"])
     rng = np.random.default_rng(seed)
-    indices = np.concatenate(
-        [
-            rng.choice(np.flatnonzero(labels == label), size=size, replace=False)
-            for label in range(len(LABELS))
-        ]
-    )
+    class_indices = [
+        rng.permutation(np.flatnonzero(labels == label))
+        for label in range(len(LABELS))
+    ]
+    if any(size > len(indices) for indices in class_indices):
+        raise ValueError(f"Cannot sample {size} examples from every class")
+    indices = np.concatenate([indices[:size] for indices in class_indices])
     rng.shuffle(indices)
     return dataset.select(indices.tolist())
