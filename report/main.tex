@@ -93,7 +93,7 @@ focus on sample efficiency rather than multilabel decision thresholds.
 \section{Data}
 
 I use the simplified GoEmotions configuration distributed through the Hugging
-Face Datasets library \citep{lhoest2021datasets}. The dataset is released under
+Face Datasets library. The dataset is released under
 the Apache 2.0 licence. I keep an example only if it has exactly one label and
 that label is joy, anger, sadness, or fear. No text normalization is applied
 before passing the text to the two model-specific pipelines.
@@ -292,8 +292,12 @@ advantage, while roughly 50 are needed for a clear gain.
 
 \section*{Declaration of AI Usage}
 
-I used OpenAI Codex, to brainstorm the research question, assist
-with implementation and debugging and assist with revising the report text.
-I remain responsible for the submitted code, analysis, and text.
+I used OpenAI Codex to brainstorm the research question, assist with parts of
+the implementation and debugging, and suggest revisions to the report text.
+AI assistance substantially influenced portions of the experimental code and
+wording. I inspected and modified all generated code, ran the experiments,
+checked the reported values against the saved results, and reviewed the final
+text and cited claims for correctness. I remain responsible for all submitted
+code, analysis, and text.
 
 \end{document}
