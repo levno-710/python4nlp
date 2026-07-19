@@ -12,6 +12,7 @@ from transformers import (
     DataCollatorWithPadding,
     Trainer,
     TrainingArguments,
+    set_seed,
 )
 from transformers.utils import logging as transformers_logging
 
@@ -58,6 +59,9 @@ def train_transformer(
             "test": test,
         }.items()
     }
+    # Seed before constructing the model so that the randomly initialized
+    # classification head is reproducible as well as the training procedure.
+    set_seed(seed)
     model = AutoModelForSequenceClassification.from_pretrained(
         model_name,
         num_labels=len(LABELS),
