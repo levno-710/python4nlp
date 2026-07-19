@@ -29,14 +29,23 @@ for Emotion Classification?}
 \maketitle
 
 \begin{abstract}
-Pretrained language models are often recommended when labelled data is scarce. I test when a
-pretrained DistilBERT classifier begins to outperform a simpler lexical model on
-four-class emotion classification. From GoEmotions, I use English Reddit
-comments with exactly one of four labels: joy, anger, sadness, or fear. I compare
-DistilBERT with TF--IDF logistic regression using balanced, nested training sets
-containing 5 to 200 examples per class. Each condition is repeated with three
-random seeds and evaluated on the original validation and test splits using
-macro-F1 and accuracy.
+Pretrained language models are often recommended when labelled data is scarce,
+but the point at which they become preferable to simpler models is
+task-dependent. I investigate how many labelled examples per class fine-tuned
+DistilBERT needs to outperform TF--IDF logistic regression in four-class
+emotion classification. From GoEmotions, I retain English Reddit comments with
+exactly one of four labels: joy, anger, sadness, or fear. Both models are trained
+on identical balanced, nested subsets containing 5 to 200 examples per class.
+Each condition is repeated with three random seeds and evaluated using macro-F1
+and accuracy on the official validation and test splits. TF--IDF obtains higher
+mean test macro-F1 with five examples per class (.374 versus .306). DistilBERT
+is better on average at ten examples but remains highly variable. From 15
+examples onward, it outperforms TF--IDF in all three test runs, with the largest
+mean gap at 50 examples (.816 versus .615). At 200 examples, DistilBERT reaches
+.865 macro-F1 but trains about 57 times longer. These results indicate that
+pretraining provides a consistent advantage with relatively little labelled
+data, although its computational cost and low-data instability remain
+substantial.
 \end{abstract}
 
 \noindent\textbf{Code and results:} \repository
@@ -168,12 +177,11 @@ reproduces the complete experiment.
 \section{Results}
 
 Table~\ref{tab:main-results} reports the final test results. At five examples
-per class, TF--IDF has the higher macro-F1. The mean scores are nearly equal at
-10 examples, but DistilBERT's standard deviation is four times larger. Between
-10 and 20 examples, its mean is higher but at least one seed still performs
-worse than the corresponding TF--IDF run. At 25 examples, DistilBERT wins for
-all three paired seeds. Its mean advantage is .165 macro-F1. The largest mean
-gap, .207, occurs at 50 examples per class.
+per class, TF--IDF has the higher macro-F1. At 10 examples, DistilBERT is better
+on average, but its standard deviation is more than four times larger and it
+wins only one of the three paired runs. At 15 examples, DistilBERT wins for all
+three paired seeds, with a mean advantage of .129 macro-F1. The largest mean
+gap, .200, occurs at 50 examples per class.
 
 \begin{table}[ht]
   \centering
@@ -189,14 +197,14 @@ gap, .207, occurs at 50 examples per class.
     \cmidrule(lr){3-4}\cmidrule(lr){5-6}
     & & Macro-F1 & Accuracy & Macro-F1 & Accuracy \\
     \midrule
-      5 &  20 & \textbf{.374 $\pm$ .024} & .383 & .310 $\pm$ .028 & .396 \\
-     10 &  40 & .410 $\pm$ .029 & .411 & \textbf{.417 $\pm$ .118} & .461 \\
-     15 &  60 & .445 $\pm$ .026 & .450 & \textbf{.511 $\pm$ .116} & .545 \\
-     20 &  80 & .481 $\pm$ .021 & .484 & \textbf{.586 $\pm$ .113} & .605 \\
-     25 & 100 & .511 $\pm$ .014 & .517 & \textbf{.675 $\pm$ .053} & .690 \\
-     50 & 200 & .615 $\pm$ .024 & .616 & \textbf{.822 $\pm$ .025} & .826 \\
-    100 & 400 & .686 $\pm$ .026 & .688 & \textbf{.855 $\pm$ .013} & .859 \\
-    200 & 800 & .734 $\pm$ .011 & .734 & \textbf{.867 $\pm$ .016} & .868 \\
+      5 &  20 & \textbf{.374 $\pm$ .024} & .383 & .306 $\pm$ .033 & .367 \\
+     10 &  40 & .410 $\pm$ .029 & .411 & \textbf{.477 $\pm$ .130} & .497 \\
+     15 &  60 & .445 $\pm$ .026 & .450 & \textbf{.574 $\pm$ .082} & .590 \\
+     20 &  80 & .481 $\pm$ .021 & .484 & \textbf{.643 $\pm$ .052} & .660 \\
+     25 & 100 & .511 $\pm$ .014 & .517 & \textbf{.697 $\pm$ .072} & .714 \\
+     50 & 200 & .615 $\pm$ .024 & .616 & \textbf{.816 $\pm$ .026} & .821 \\
+    100 & 400 & .686 $\pm$ .026 & .688 & \textbf{.846 $\pm$ .014} & .851 \\
+    200 & 800 & .734 $\pm$ .011 & .734 & \textbf{.865 $\pm$ .009} & .868 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -212,14 +220,14 @@ gap, .207, occurs at 50 examples per class.
 
 Figure~\ref{fig:curve} shows the learning curves for both models. DistilBERT is
 unstable in the 10--25-example range. For example, at 20 examples its three
-macro-F1 scores are .621, .676, and .460. The curve begins
-to flatten after 50 examples: its mean improves by .033 from 50 to 100 and only
-.011 from 100 to 200. TF--IDF continues to improve, so the absolute gap narrows
+macro-F1 scores are .651, .691, and .588. The curve begins
+to flatten after 50 examples: its mean improves by .030 from 50 to 100 and .019
+from 100 to 200. TF--IDF continues to improve, so the absolute gap narrows
 after its maximum at 50 examples.
 
 At 200 examples per class, mean measured training
-time is 1.44 seconds for TF--IDF and 74.19 seconds for DistilBERT, about 52 times
-longer. The corresponding gain is .133 macro-F1.
+time is 1.23 seconds for TF--IDF and 69.30 seconds for DistilBERT, about 57 times
+longer. The corresponding gain is .131 macro-F1.
 
 \section{Discussion, error analysis, and limitations}
 
@@ -231,11 +239,11 @@ optimizer steps in the five-example condition. At 10--20 examples, the large
 between-seed variation agrees with earlier observations that few-sample
 fine-tuning can be unstable \citep{zhang2020revisiting}.
 
-At 200 examples per class, DistilBERT's mean per-class F1 scores are .918 for
-joy, .864 for anger, .848 for sadness, and .837 for fear. TF--IDF scores .803,
+At 200 examples per class, DistilBERT's mean per-class F1 scores are .919 for
+joy, .871 for anger, .850 for sadness, and .820 for fear. TF--IDF scores .803,
 .737, .697, and .698 respectively. DistilBERT therefore performs better on every class. Its most frequent remaining errors, aggregated over
-the three runs, are anger predicted as sadness (33 cases), sadness as fear (23),
-and anger as fear (18).
+the three runs, are sadness predicted as fear (27 cases), anger as sadness (26),
+and anger as fear (21).
 
 Table~\ref{tab:errors} gives three examples from the 200-example runs. In particular, ``I am unconcerned'' has little evidence
 for the annotated sadness label when removed from its original conversation.
@@ -280,10 +288,10 @@ different metrics.
 
 With five labelled examples per emotion, TF--IDF is both better and much cheaper. DistilBERT is
 better on average from 10 examples onward, but its results remain strongly
-seed-dependent through 20 examples. At 25 examples per class it beats TF--IDF
-for every seed, and at 50 examples the advantage is large: .822 versus .615
+seed-dependent at the smallest sizes. At 15 examples per class it beats TF--IDF
+for every test seed, and at 50 examples the advantage is large: .816 versus .615
 macro-F1. Improvements after 100 examples are small. For this dataset and
-training procedure, 25 examples per class are therefore enough for a consistent
+training procedure, 15 examples per class are therefore enough for a consistent
 advantage, while roughly 50 are needed for a clear gain.
 
 \clearpage
