@@ -40,12 +40,12 @@ Each condition is repeated with three random seeds and evaluated using macro-F1
 and accuracy on the official validation and test splits. TF--IDF obtains higher
 mean test macro-F1 with five examples per class (.374 versus .306). DistilBERT
 is better on average at ten examples but remains highly variable. From 15
-examples onward, it outperforms TF--IDF in all three test runs, with the largest
-mean gap at 50 examples (.816 versus .615). At 200 examples, DistilBERT reaches
-.865 macro-F1 but trains about 57 times longer. These results indicate that
-pretraining provides a consistent advantage with relatively little labelled
-data, although its computational cost and low-data instability remain
-substantial.
+examples onward, it outperforms TF--IDF in all three test runs. On validation,
+this consistency begins at 20 examples. The largest test gap occurs at 50
+examples (.816 versus .615). At 200 examples, DistilBERT reaches .865 macro-F1
+but trains about 57 times longer. I therefore identify 20 examples per class as
+the threshold for a consistent advantage across both splits,
+although computational cost and low-data instability remain substantial.
 \end{abstract}
 
 \noindent\textbf{Code and results:} \repository
@@ -139,7 +139,7 @@ depend on a missing conversational context.
 
 \subsection{Models}
 
-The baseline is a scikit-learn pipeline consisting
+The baseline is a scikit-learn pipeline \citep{pedregosa2011scikit} consisting
 of a TF--IDF vectorizer and logistic regression. The vectorizer uses lowercased
 word unigrams and bigrams and sublinear term frequency. Logistic regression uses
 L2 regularization with $C=1$ and a maximum of 1,000 iterations.
@@ -149,7 +149,8 @@ classification head. Text is tokenized with the matching WordPiece tokenizer,
 truncated at 128 tokens. All model
 parameters are fine-tuned. Training uses AdamW, a learning rate of $2\times
 10^{-5}$, weight decay 0.01, batch size 8, and 10 epochs. The evaluation batch
-size is 64. Models are implemented with Transformers and PyTorch.
+size is 64. Models are implemented with Transformers and PyTorch
+\citep{wolf2020transformers,paszke2019pytorch}.
 
 \subsection{Controlled comparison and evaluation}
 
@@ -158,7 +159,9 @@ $\{5,10,15,20,25,50,100,200\}$. Thus the total labelled training sizes range
 from 20 to 800. I repeat every condition with seeds 13, 42, and 73. A seed fixes
 both the nested sample and DistilBERT training randomness. TF--IDF training is
 deterministic. Neither model receives validation or
-test examples during training.
+test examples during training. All training sizes, hyperparameters, and
+evaluation procedures were fixed before inspecting the evaluation results. The
+test split provides the primary final comparison.
 
 Macro-F1 is the primary score because it gives the four emotions equal weight
 despite the unequal evaluation distributions. Accuracy is included as a
@@ -182,6 +185,12 @@ on average, but its standard deviation is more than four times larger and it
 wins only one of the three paired runs. At 15 examples, DistilBERT wins for all
 three paired seeds, with a mean advantage of .129 macro-F1. The largest mean
 gap, .200, occurs at 50 examples per class.
+
+The validation results show the same overall transition but place the
+consistent crossover slightly later. At 15 examples per class, DistilBERT wins
+two of the three paired validation runs. From 20 examples onward, it wins all
+three. 20 examples per class therefore is the threshold at
+which the advantage is consistent.
 
 \begin{table}[ht]
   \centering
@@ -259,8 +268,8 @@ This is better viewed as annotation or context ambiguity.
     \toprule
     Comment & Label & TF--IDF & DistilBERT \\
     \midrule
-    ``Sun is out, feels great.'' & Joy & Sadness/fear & Joy \\
-    ``I don't feel so financially secure.'' & Fear & Sadness & Sadness \\
+    ``-9 and I’m out shopping. Sun is out feels great.'' & Joy & Sadness/fear & Joy \\
+    ``I don't feel so financially secure'' & Fear & Sadness & Sadness \\
     ``I am unconcerned.'' & Sadness & Joy/fear & Fear \\
     \bottomrule
   \end{tabular}
@@ -289,10 +298,12 @@ different metrics.
 With five labelled examples per emotion, TF--IDF is both better and much cheaper. DistilBERT is
 better on average from 10 examples onward, but its results remain strongly
 seed-dependent at the smallest sizes. At 15 examples per class it beats TF--IDF
-for every test seed, and at 50 examples the advantage is large: .816 versus .615
-macro-F1. Improvements after 100 examples are small. For this dataset and
-training procedure, 15 examples per class are therefore enough for a consistent
-advantage, while roughly 50 are needed for a clear gain.
+for every test seed but only two of three validation seeds. From 20 examples it
+wins every paired run on both splits. At 50 examples the test advantage is
+large: .816 versus .615 macro-F1. Improvements after 100 examples are small.
+For this dataset and training procedure, 20 examples per class are therefore a
+conservative threshold for a consistent advantage across both splits, while
+roughly 50 are needed for a clear gain.
 
 \clearpage
 \bibliographystyle{plainnat}
