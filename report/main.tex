@@ -40,12 +40,13 @@ Each condition is repeated with three random seeds and evaluated using macro-F1
 and accuracy on the official validation and test splits. TF--IDF obtains higher
 mean test macro-F1 with five examples per class (.374 versus .306). DistilBERT
 is better on average at ten examples but remains highly variable. From 15
-examples onward, it outperforms TF--IDF in all three test runs. On validation,
-this consistency begins at 20 examples. The largest test gap occurs at 50
+examples onward, it outperforms TF--IDF in all three observed test runs. On
+validation, this pattern begins at 20 examples. The largest test gap occurs at 50
 examples (.816 versus .615). At 200 examples, DistilBERT reaches .865 macro-F1
 but trains about 57 times longer. I therefore identify 20 examples per class as
-the threshold for a consistent advantage across both splits,
-although computational cost and low-data instability remain substantial.
+the first tested size with an advantage in all three runs on both splits,
+although three seeds cannot establish a general threshold and computational
+cost and low-data instability remain substantial.
 \end{abstract}
 
 \noindent\textbf{Code and results:} \repository
@@ -60,8 +61,8 @@ labels, but their classification layer still has to be learned from the new
 data. With only a handful of examples, fine-tuning may also depend strongly on
 the sampled examples and random initialization \citep{zhang2020revisiting}.
 
-This report aims to answer the question: \emph{How many labelled examples per class are needed before
-fine-tuned DistilBERT reliably outperforms TF--IDF logistic regression on
+This report aims to answer the question: \emph{At what tested training size does
+fine-tuned DistilBERT consistently outperform TF--IDF logistic regression on
 four-class emotion classification?} I expect the lexical baseline to be
 competitive at the smallest sizes because emotion words provide direct cues. I
 expect DistilBERT to improve more quickly once there are enough examples to
@@ -71,7 +72,9 @@ The contribution is a controlled learning-curve experiment. The training samples
 the evaluation data is fixed, and both models see exactly the same labelled
 examples in every condition. Repeating the experiment with three seeds makes it
 possible to see where DistilBERT is only better on average and where its
-advantage is consistent.
+advantage occurs in every observed paired run. Here, ``consistent'' means higher
+macro-F1 in all three paired runs. It does not imply a statistically established 
+threshold.
 
 \section{Background and related work}
 
@@ -103,7 +106,7 @@ focus on sample efficiency rather than multilabel decision thresholds.
 
 I use the simplified GoEmotions configuration distributed through the Hugging
 Face Datasets library. The dataset is released under
-the Apache 2.0 licence. I keep an example only if it has exactly one label and
+the Apache 2.0 licence \citep{demszky2020goemotions}. I keep an example only if it has exactly one label and
 that label is joy, anger, sadness, or fear. No text normalization is applied
 before passing the text to the two model-specific pipelines.
 
@@ -189,8 +192,8 @@ gap, .200, occurs at 50 examples per class.
 The validation results show the same overall transition but place the
 consistent crossover slightly later. At 15 examples per class, DistilBERT wins
 two of the three paired validation runs. From 20 examples onward, it wins all
-three. 20 examples per class therefore is the threshold at
-which the advantage is consistent.
+three. Thus, 20 examples per class is the first tested size at which the
+advantage occurs in every observed run on both splits.
 
 \begin{table}[ht]
   \centering
@@ -301,9 +304,10 @@ seed-dependent at the smallest sizes. At 15 examples per class it beats TF--IDF
 for every test seed but only two of three validation seeds. From 20 examples it
 wins every paired run on both splits. At 50 examples the test advantage is
 large: .816 versus .615 macro-F1. Improvements after 100 examples are small.
-For this dataset and training procedure, 20 examples per class are therefore a
-conservative threshold for a consistent advantage across both splits, while
-roughly 50 are needed for a clear gain.
+For this dataset, training procedure, and set of three seeds, 20 examples per
+class are therefore the first tested size with an advantage in every run on both
+splits, while roughly 50 are needed for a clear mean gain. More seeds would be
+required to determine whether this crossover generalizes.
 
 \clearpage
 \bibliographystyle{plainnat}
